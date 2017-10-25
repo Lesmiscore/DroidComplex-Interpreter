@@ -12,12 +12,20 @@ public class ComplexInterpreter {
     static final String REGEX_NUMBER="([0-9]*\\.[0-9]+|[0-9]+)"
 
     private static ComplexInterpreter instance
+    private static boolean metaClassInstalled=false
 
     static void install(Context app){
         if(instance){
             return
         }
         instance=new ComplexInterpreter(app.cacheDir,app.classLoader)
+        installMetaClass()
+    }
+
+    static void installMetaClass(){
+        if(metaClassInstalled){
+            return
+        }
         /* Set up MetaClass to interpret */
         Number.metaClass.plus={Number a->
             convert(delegate).add(convert(a))
@@ -40,6 +48,7 @@ public class ComplexInterpreter {
         Apcomplex.I.metaClass.call={Number a->
             convert(delegate)*convert(a)
         }
+        metaClassInstalled=true
     }
 
     private static Apcomplex convert(a){
