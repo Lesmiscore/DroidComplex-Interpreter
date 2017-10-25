@@ -78,12 +78,12 @@ public class GrooidShell {
     }
 
 
-    public EvalResult evaluate(String scriptText,EvalProgress progress) throws Throwable{
-        progress.onProgress(EvalProgressCategory.COMPILING);
+    public EvalResult evaluate(String scriptText,CompilerConfigurationEditor edt) throws Throwable{
         long sd = System.nanoTime();
         final Set<String> classNames = new LinkedHashSet<String>();
         final DexFile dexFile = new DexFile(dexOptions);
         CompilerConfiguration config = new CompilerConfiguration();
+        edt.edit(config);
         config.setBytecodePostprocessor(new BytecodeProcessor() {
             @Override
             public byte[] processBytecode(String s, byte[] bytes) {
@@ -110,7 +110,6 @@ public class GrooidShell {
             throw e;
         }
 
-        progress.onProgress(EvalProgressCategory.DEXING);
         Map<String, Class> classes = defineDynamic(classNames, dalvikBytecode);
         long compilationTime = System.nanoTime()-sd;
         long execTime = 0;
@@ -193,11 +192,7 @@ public class GrooidShell {
         }
     }
 
-    public interface EvalProgress{
-        void onProgress(EvalProgressCategory prog);
-    }
-
-    public enum EvalProgressCategory{
-        COMPILING,DEXING;
+    public interface CompilerConfigurationEditor{
+        void edit(CompilerConfiguration cfg);
     }
 }
