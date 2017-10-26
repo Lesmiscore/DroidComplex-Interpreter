@@ -50,7 +50,10 @@ public class ComplexInterpreter {
         Number.metaClass.negative={->
             convert(delegate).negate()
         }
-        Apcomplex.I.metaClass.call={Number a->
+        Number.metaClass.power={Number a->
+            ApcomplexMath.pow(convert(delegate),convert(a))
+        }
+        Number.metaClass.call={Number a->
             convert(delegate)*convert(a)
         }
         metaClassInstalled=true
@@ -85,6 +88,7 @@ public class ComplexInterpreter {
              * [real]+[imag]i, [real]+[imag]j
              * i[imag], j[imag]
              * [imag]i, [imag]j
+             * ii, ij, ji, jj
              * */
             def prefix="^$REGEX_SIGN_OPTIONAL"
             def first="$prefix[ij]\$"
@@ -92,6 +96,7 @@ public class ComplexInterpreter {
             def third="$prefix$REGEX_NUMBER$REGEX_SIGN$REGEX_NUMBER[ij]\$"
             def forth="$prefix[ij]$REGEX_NUMBER\$"
             def fifth="$prefix$REGEX_NUMBER[ij]\$"
+            def sixth="^$REGEX_SIGN[ij]{2}\$"
             if(inStr.matches(first)){
                 if(inStr.startsWith("-")){
                     return -Apcomplex.I
@@ -114,6 +119,12 @@ public class ComplexInterpreter {
                     return -result
                 }else {
                     return result
+                }
+            }else if(inStr.matches(sixth)){
+                if(inStr.startsWith("-")){
+                    return new Apfloat(1)
+                }else {
+                    return new Apfloat(-1)
                 }
             }
         }
