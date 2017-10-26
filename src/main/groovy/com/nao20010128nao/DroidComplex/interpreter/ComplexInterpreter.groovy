@@ -139,9 +139,9 @@ public class ComplexInterpreter {
                 return Apcomplex.I
             }else if(name.matches("^[ij]$REGEX_NUMBER\$")||name.matches("^$REGEX_NUMBER[ij]\$")){
                 return new Apcomplex(Apfloat.ZERO,new Apfloat(name.findAll(REGEX_NUMBER).first()))
-            }else if(name.matches('^[ij]')&&super.getVariable(name) instanceof Number){
+            }else if(name.matches('^[ij]')&&super.getVariable(name.substring(1)) instanceof Number){
                 return super.getVariable(name.substring(1))*Apcomplex.I
-            }else if(name.matches('[ij]$')&&super.getVariable(name) instanceof Number){
+            }else if(name.matches('[ij]$')&&super.getVariable(name.substring(0,name.length()-1)) instanceof Number){
                 return super.getVariable(name.substring(0,name.length()-1))*Apcomplex.I
             }
             return super.getVariable(name)
