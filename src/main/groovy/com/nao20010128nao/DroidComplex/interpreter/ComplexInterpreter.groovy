@@ -17,14 +17,14 @@ public class ComplexInterpreter {
     static final String REGEX_SIGN="([+-])"
     static final String REGEX_SIGN_OPTIONAL="([+-]?)"
 
-    private static ComplexInterpreter instance
+    private static ComplexInterpreter instance0
     private static boolean metaClassInstalled=false
 
     static void install(Context app){
-        if(instance){
+        if(instance0){
             return
         }
-        instance=new ComplexInterpreter(app?.cacheDir,app?.classLoader)
+        instance0=new ComplexInterpreter(app?.cacheDir,app?.classLoader)
         installMetaClass()
     }
 
@@ -78,7 +78,7 @@ public class ComplexInterpreter {
     }
 
     @CompileStatic
-    static ComplexInterpreter getInstance(){instance}
+    static ComplexInterpreter getInstance(){instance0}
 
     static Apcomplex convert(a){
         if(a instanceof Apcomplex){
