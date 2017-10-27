@@ -205,18 +205,20 @@ public class ComplexInterpreter {
         Apcomplex j(Object a){i(a)}
 
         @Memoized
-        private Apcomplex getPropertyImpl(String name){
+        private Object getPropertyImpl(String name){
             if(name.matches('^[ij]$')){
                 return Apcomplex.I
             }else if(name.matches("^[ij]$REGEX_NUMBER\$")||name.matches("^$REGEX_NUMBER[ij]\$")){
                 return new Apcomplex(Apfloat.ZERO,new Apfloat(name.findAll(REGEX_NUMBER).first()))
-            }else if(name.matches('^[ij]')&&super.getProperty(name.substring(1)) instanceof Number){
-                return super.getProperty(name.substring(1))*Apcomplex.I
-            }else if(name.matches('[ij]$')&&super.getProperty(name.substring(0,name.length()-1)) instanceof Number){
-                return super.getProperty(name.substring(0,name.length()-1))*Apcomplex.I
+            }else if(name.matches('^[ij]')&&getPropSuper(name.substring(1)) instanceof Number){
+                return convert(getPropSuper(name.substring(1)))*Apcomplex.I
+            }else if(name.matches('[ij]$')&&getPropSuper(name.substring(0,name.length()-1)) instanceof Number){
+                return convert(getPropSuper(name.substring(0,name.length()-1)))*Apcomplex.I
             }
-            return super.getProperty(name)
+            return getPropSuper(name)
         }
+
+        private Object getPropSuper(String name){super.getProperty(name)}
     }
 
     private interface Impl{
