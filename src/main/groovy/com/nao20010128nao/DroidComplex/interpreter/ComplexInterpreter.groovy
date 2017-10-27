@@ -1,7 +1,9 @@
 package com.nao20010128nao.DroidComplex.interpreter
 
 import android.content.Context
+import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexClassLoader
+import dalvik.system.PathClassLoader
 import groovy.transform.CompileStatic
 import groovy.transform.Memoized
 import me.champeau.groovydroid.GrooidShell
@@ -152,7 +154,7 @@ public class ComplexInterpreter {
     Impl impl
 
     private ComplexInterpreter(File cache,ClassLoader loader){
-        if(loader instanceof DexClassLoader){
+        if(loader instanceof BaseDexClassLoader){
             impl=new AndroidImpl()
         }else{
             impl=new JvmImpl()
