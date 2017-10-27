@@ -2,8 +2,6 @@ package com.nao20010128nao.DroidComplex.interpreter
 
 import android.content.Context
 import dalvik.system.BaseDexClassLoader
-import dalvik.system.DexClassLoader
-import dalvik.system.PathClassLoader
 import groovy.transform.CompileStatic
 import groovy.transform.Memoized
 import me.champeau.groovydroid.GrooidShell
@@ -20,13 +18,15 @@ public class ComplexInterpreter {
     static final String REGEX_SIGN_OPTIONAL="([+-]?)"
 
     private static ComplexInterpreter instance0
+    private static long precision0
     private static boolean metaClassInstalled=false
 
-    static void install(Context app){
+    static void install(Context app,long precision){
         if(instance0){
             return
         }
         instance0=new ComplexInterpreter(app?.cacheDir,app?.classLoader)
+        precision0=precision
         installMetaClass()
     }
 
@@ -82,7 +82,13 @@ public class ComplexInterpreter {
     @CompileStatic
     static ComplexInterpreter getInstance(){instance0}
 
+    @Memoized
     static Apcomplex convert(a){
+        convertImpl(a).precision(precision0)
+    }
+
+    @Memoized
+    private static Apcomplex convertImpl(a){
         if(a==null){
             /* null: let's return 0 instead of null */
             return Apfloat.ZERO
@@ -180,16 +186,9 @@ public class ComplexInterpreter {
     static abstract class DroidComplexScript extends Script{
         @Override
         Object getProperty(String name) {
-            if(name.matches('^[ij]$')){
-                return Apcomplex.I
-            }else if(name.matches("^[ij]$REGEX_NUMBER\$")||name.matches("^$REGEX_NUMBER[ij]\$")){
-                return new Apcomplex(Apfloat.ZERO,new Apfloat(name.findAll(REGEX_NUMBER).first()))
-            }else if(name.matches('^[ij]')&&super.getProperty(name.substring(1)) instanceof Number){
-                return super.getProperty(name.substring(1))*Apcomplex.I
-            }else if(name.matches('[ij]$')&&super.getProperty(name.substring(0,name.length()-1)) instanceof Number){
-                return super.getProperty(name.substring(0,name.length()-1))*Apcomplex.I
+            return getPropertyImpl(name).with {
+                ((it instanceof Apcomplex)?{it.precision(precision0)}:IDENTITY)(it)
             }
-            return super.getProperty(name)
         }
 
         @Override
@@ -201,9 +200,23 @@ public class ComplexInterpreter {
         }
 
         @Memoized
-        Apcomplex i(Object a){Apcomplex.I*convert(a)}
+        Apcomplex i(Object a){(Apcomplex.I*convert(a)).precision(precision0)}
         @Memoized
-        Apcomplex j(Object a){Apcomplex.I*convert(a)}
+        Apcomplex j(Object a){i(a)}
+
+        @Memoized
+        private Apcomplex getPropertyImpl(String name){
+            if(name.matches('^[ij]$')){
+                return Apcomplex.I
+            }else if(name.matches("^[ij]$REGEX_NUMBER\$")||name.matches("^$REGEX_NUMBER[ij]\$")){
+                return new Apcomplex(Apfloat.ZERO,new Apfloat(name.findAll(REGEX_NUMBER).first()))
+            }else if(name.matches('^[ij]')&&super.getProperty(name.substring(1)) instanceof Number){
+                return super.getProperty(name.substring(1))*Apcomplex.I
+            }else if(name.matches('[ij]$')&&super.getProperty(name.substring(0,name.length()-1)) instanceof Number){
+                return super.getProperty(name.substring(0,name.length()-1))*Apcomplex.I
+            }
+            return super.getProperty(name)
+        }
     }
 
     private interface Impl{
