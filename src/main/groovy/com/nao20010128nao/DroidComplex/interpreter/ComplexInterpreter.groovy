@@ -83,7 +83,10 @@ public class ComplexInterpreter {
     static ComplexInterpreter getInstance(){instance0}
 
     static Apcomplex convert(a){
-        if(a instanceof Apcomplex){
+        if(a==null){
+            /* null: let's return 0 instead of null */
+            return Apfloat.ZERO
+        }else if(a instanceof Apcomplex){
             /* No needs to be converted */
             return a
         }else if(a instanceof Number){
