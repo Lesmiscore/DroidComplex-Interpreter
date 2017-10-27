@@ -3,6 +3,7 @@ package com.nao20010128nao.DroidComplex.interpreter
 import android.content.Context
 import dalvik.system.DexClassLoader
 import groovy.transform.CompileStatic
+import groovy.transform.Memoized
 import me.champeau.groovydroid.GrooidShell
 import org.apfloat.Apcomplex
 import org.apfloat.ApcomplexMath
@@ -32,6 +33,8 @@ public class ComplexInterpreter {
             return
         }
         /* Set up MetaClass to interpret */
+
+        /* Number <-> Number */
         Number.metaClass.plus={Number a->
             convert(delegate).add(convert(a))
         }
@@ -56,13 +59,28 @@ public class ComplexInterpreter {
         Number.metaClass.call={Number a->
             convert(delegate)*convert(a)
         }
+
+        /* Number <-> String */
+        Number.metaClass.plus={String a->
+            convert(delegate).add(convert(a))
+        }
+        Number.metaClass.minus={String a->
+            convert(delegate).subtract(convert(a))
+        }
+        Number.metaClass.multiply={String a->
+            ApcomplexMath.product(convert(delegate),convert(a))
+        }
+        Number.metaClass.div={String a->
+            convert(delegate).divide(convert(a))
+        }
+
         metaClassInstalled=true
     }
 
     @CompileStatic
     static ComplexInterpreter getInstance(){instance}
 
-    private static Apcomplex convert(a){
+    static Apcomplex convert(a){
         if(a instanceof Apcomplex){
             /* No needs to be converted */
             return a
@@ -154,46 +172,33 @@ public class ComplexInterpreter {
         Throwable error
     }
 
-    @CompileStatic
     static abstract class DroidComplexScript extends Script{
-        public DroidComplexScript(){
-            super(ComplexNumberBinding.instance)
-        }
-
         @Override
-        Binding getBinding() {
-            return binding=ComplexNumberBinding.instance
-        }
-
-        @Override
-        void setBinding(Binding binding) {
-            super.setBinding(ComplexNumberBinding.instance)
-        }
-    }
-
-    @Singleton
-    static class ComplexNumberBinding extends Binding{
-        @Override
-        Object getVariable(String name) {
+        Object getProperty(String name) {
             if(name.matches('^[ij]$')){
                 return Apcomplex.I
             }else if(name.matches("^[ij]$REGEX_NUMBER\$")||name.matches("^$REGEX_NUMBER[ij]\$")){
                 return new Apcomplex(Apfloat.ZERO,new Apfloat(name.findAll(REGEX_NUMBER).first()))
-            }else if(name.matches('^[ij]')&&super.getVariable(name.substring(1)) instanceof Number){
-                return super.getVariable(name.substring(1))*Apcomplex.I
-            }else if(name.matches('[ij]$')&&super.getVariable(name.substring(0,name.length()-1)) instanceof Number){
-                return super.getVariable(name.substring(0,name.length()-1))*Apcomplex.I
+            }else if(name.matches('^[ij]')&&super.getProperty(name.substring(1)) instanceof Number){
+                return super.getProperty(name.substring(1))*Apcomplex.I
+            }else if(name.matches('[ij]$')&&super.getProperty(name.substring(0,name.length()-1)) instanceof Number){
+                return super.getProperty(name.substring(0,name.length()-1))*Apcomplex.I
             }
-            return super.getVariable(name)
+            return super.getProperty(name)
         }
 
         @Override
-        void setVariable(String name, Object value) {
-            if(name.matches('^[ij]')){
+        void setProperty(String property, Object newValue) {
+            if(property.matches('^[ij]')){
                 throw new Error('Cannot set to any field starts with "i" or "j".')
             }
-            super.setVariable(name, value)
+            super.setProperty(property, newValue)
         }
+
+        @Memoized
+        Apcomplex i(Object a){Apcomplex.I*convert(a)}
+        @Memoized
+        Apcomplex j(Object a){Apcomplex.I*convert(a)}
     }
 
     private interface Impl{
