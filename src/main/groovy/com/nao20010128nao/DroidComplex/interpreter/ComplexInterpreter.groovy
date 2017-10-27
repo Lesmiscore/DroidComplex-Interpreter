@@ -108,7 +108,7 @@ public class ComplexInterpreter {
                 if(inStr.startsWith("-")){
                     re=-re
                 }
-                if(inStr.substring(1).startsWith("-")){
+                if(inStr.substring(1).contains("-")){
                     im=-im
                 }
                 return new Apcomplex(re,im)
