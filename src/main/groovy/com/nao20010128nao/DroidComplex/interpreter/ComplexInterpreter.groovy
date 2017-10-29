@@ -187,7 +187,7 @@ public class ComplexInterpreter {
         @Override
         Object getProperty(String name) {
             return getPropertyImpl(name).with {
-                ((it instanceof Apcomplex)?{it.precision(ComplexInterpreter.precision0)}:IDENTITY)(it)
+                ((it instanceof Apcomplex)?{it.precision(ComplexInterpreter.precision0)}:Closure.IDENTITY)(it)
             }
         }
 
